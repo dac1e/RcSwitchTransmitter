@@ -24,8 +24,23 @@
 
 #include "RcSwitchTransmitterBase.hpp"
 
+#if defined(ARDUINO_ARCH_SAM)
+// use own microseconds delay on ARDUINO_ARCH_SAM, because global delayMicroseconds() is causing problems.
+#define RCSWITCH_TRANSMITTER_USE_LOCAL_DELAY_MICROS true
+#else
+#define RCSWITCH_TRANSMITTER_USE_LOCAL_DELAY_MICROS false
+#endif
+
+#if not RCSWITCH_TRANSMITTER_USE_LOCAL_DELAY_MICROS
+#include <Arduino.h>
+#undef min
+#undef max
+#endif
+
 #if not RCSWITCH_TRANSMITTER_TIMING_CORRECTION
 #if defined (ARDUINO_AVR_UNO)
+  // We need to shorten the delay on UNO, because of its delayMicroseconds() function shifts the pulses
+  // length beyond tolerance.
   #define RCSWITCH_TRANSMITTER_TIMING_CORRECTION (40) // usec
 #else
   #define RCSWITCH_TRANSMITTER_TIMING_CORRECTION (0)  // usec
@@ -35,6 +50,9 @@
 namespace RcSwitchTx {
 
 inline void delayMicros(uint32_t) __attribute__((always_inline, unused));
+
+#if RCSWITCH_TRANSMITTER_USE_LOCAL_DELAY_MICROS
+
 inline void delayMicros(const uint32_t usec) {
   const uint32_t start = micros();
   while(true) {
@@ -44,6 +62,12 @@ inline void delayMicros(const uint32_t usec) {
     }
   }
 }
+
+#else
+  inline void delayMicros(const uint32_t usec) {
+    ::delayMicroseconds(usec);
+  }
+#endif
 
 void RcSwitchTransmitterBase::transmitBit(const int ioPin, const RcSwitchTx::TxTimingSpec &timingSpec,
     const RcSwitchTx::TxPulsePairTime &pulsePairTime) {

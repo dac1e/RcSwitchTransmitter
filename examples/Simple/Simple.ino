@@ -50,7 +50,13 @@ DATA_ISR_ATTR static const TxProtocolTable <
 // For curiosity or debugging print the timing spec table that has been created.
 #define DUMP_TIMING_SPEC_TABLE true
 
+#if defined (ARDUINO_AVR_UNO)
+constexpr int TX433_DATA_PIN = 13;
+#else
 constexpr int TX433_DATA_PIN = 7;
+#endif
+
+constexpr int TRIGGER_BUTTON = 12;
 
 // Reference to the serial to be used for printing.
 typeof(Serial)& output = Serial;
@@ -71,6 +77,8 @@ void setup()
   delay(500);
 #endif
   rcSwitchTransmitter.begin(txProtocolTable.toTimingSpecTable());
+
+  pinMode(TRIGGER_BUTTON, INPUT_PULLUP);
 }
 
 /* Some typical PT2262 buttons: */
@@ -88,8 +96,12 @@ void loop()
   static constexpr size_t PROTCOL_INDEX_2 = 11; // Sygonix
 
   // Send code on protocol 2262
-  rcSwitchTransmitter.send(PROTCOL_INDEX_1, BUTTON_CODE_DEMO, 24);
-  // Send code on protocol Sygonix
-  rcSwitchTransmitter.send(PROTCOL_INDEX_2, BUTTON_CODE_DEMO, 24);
-  delay(1000);
+  while(digitalRead(TRIGGER_BUTTON) == LOW) {
+    rcSwitchTransmitter.send(PROTCOL_INDEX_1, BUTTON_CODE_DEMO, 24);
+  }
+
+
+//  // Send code on protocol Sygonix
+//  rcSwitchTransmitter.send(PROTCOL_INDEX_2, BUTTON_CODE_DEMO, 24);
+//  delay(1000);
 }

@@ -24,6 +24,14 @@
 
 #include "RcSwitchTransmitterBase.hpp"
 
+#if not RCSWITCH_TRANSMITTER_TIMING_CORRECTION
+#if defined (ARDUINO_AVR_UNO)
+  #define RCSWITCH_TRANSMITTER_TIMING_CORRECTION (40) // usec
+#else
+  #define RCSWITCH_TRANSMITTER_TIMING_CORRECTION (0)  // usec
+#endif
+#endif
+
 namespace RcSwitchTx {
 
 inline void delayMicros(uint32_t) __attribute__((always_inline, unused));
@@ -43,9 +51,34 @@ void RcSwitchTransmitterBase::transmitBit(const int ioPin, const RcSwitchTx::TxT
   const unsigned logicLevelA = (timingSpec.bInverseLevel) ? LOW : HIGH;
   const unsigned logicLevelB = (timingSpec.bInverseLevel) ? HIGH : LOW;
   digitalWrite(ioPin, logicLevelA);
-  delayMicros(pulsePairTime.durationA);
+  delayMicros(pulsePairTime.durationA - RCSWITCH_TRANSMITTER_TIMING_CORRECTION);
   digitalWrite(ioPin, logicLevelB);
-  delayMicros(pulsePairTime.durationB);
+  delayMicros(pulsePairTime.durationB - RCSWITCH_TRANSMITTER_TIMING_CORRECTION);
+}
+
+bool RcSwitchTransmitterBase::send(const int ioPin, const size_t protocolIndex,
+    const uint32_t code, const size_t bitCount) {
+  if (mTxTimingSpecTable.start != nullptr) {
+    if (protocolIndex < mTxTimingSpecTable.size) {
+      const RcSwitchTx::TxTimingSpec &timingSpec =
+          mTxTimingSpecTable.start[protocolIndex];
+      // Send synch at the beginning of the first repetition
+      transmitBit(ioPin, timingSpec, timingSpec.synchronizationPulsePair);
+      for (size_t repeat = 0; repeat < mRepeatCount; repeat++) {
+        for (int i = bitCount - 1; i >= 0; i--) {
+          if (code & (1L << i)) {
+            transmitBit(ioPin, timingSpec, timingSpec.data1pulsePair);
+          } else {
+            transmitBit(ioPin, timingSpec, timingSpec.data0pulsePair);
+          }
+        }
+        // Send synch at the end if each repeat
+        transmitBit(ioPin, timingSpec, timingSpec.synchronizationPulsePair);
+      }
+      return true;
+    }
+  }
+  return false;
 }
 
 } // namespace RcSwitchTx

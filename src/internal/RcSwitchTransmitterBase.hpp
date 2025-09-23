@@ -41,42 +41,18 @@ class RcSwitchTransmitterBase {
       const RcSwitchTx::TxPulsePairTime &pulsePairTime);
 
 protected:
-  RcSwitchTransmitterBase() : mTxTimingSpecTable{nullptr,0}, mRepeatCount(1) {}
+  RcSwitchTransmitterBase() : mTxTimingSpecTable{nullptr,0}, mRepeatCount(3) {}
 
   void begin( const RcSwitchTx::TxTimingSpecTable& txTimingSpecTable) {
      mTxTimingSpecTable = txTimingSpecTable;
   }
 
-  inline bool setRepeatCount(const size_t repeatCount) {
+  inline void setRepeatCount(const size_t repeatCount) {
     mRepeatCount = repeatCount;
   }
 
-  bool send(const int ioPin, const size_t protocolIndex, const uint32_t code, const size_t bitCount) {
-    if(mTxTimingSpecTable.start !=  nullptr) {
-      if(protocolIndex < mTxTimingSpecTable.size) {
-        const RcSwitchTx::TxTimingSpec& timingSpec = mTxTimingSpecTable.start[protocolIndex];
-
-        // Send synch at the beginning of the first repetition
-        transmitBit(ioPin, timingSpec, timingSpec.synchronizationPulsePair);
-
-        for(size_t repeat = 0; repeat < mRepeatCount; repeat++) {
-          for (int i = bitCount-1; i >= 0; i--) {
-            if (code & (1L << i)) {
-              transmitBit(ioPin, timingSpec, timingSpec.data1pulsePair);
-            }
-            else {
-              transmitBit(ioPin, timingSpec, timingSpec.data0pulsePair);
-            }
-          }
-
-          // Send synch at the end if each repeat
-          transmitBit(ioPin, timingSpec, timingSpec.synchronizationPulsePair);
-        }
-        return true;
-      }
-    }
-    return false;
-  }
+  bool send(const int ioPin, const size_t protocolIndex, const uint32_t code,
+      const size_t bitCount);
 };
 
 } // namespace RcSwitchTx

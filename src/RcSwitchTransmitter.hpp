@@ -28,13 +28,10 @@
 #define RCSWITCH_TRANSMITTER_API_HPP_
 
 #include <Arduino.h>
-#undef min
-#undef max
 
 #include "internal/ISR_ATTR.hpp"
 #include <stddef.h>
 #include <stdint.h>
-
 
 /*
  * The remote control protocol is a stream of pulse pairs with different duration and
@@ -182,8 +179,8 @@ public:
     return base_t::send(IOPIN, protocolIndex, code, bitCount);
   }
 
-  inline bool setRepeatCount(const size_t repeatCount) {
-    return base_t::setRepeatCount(repeatCount);
+  inline void setRepeatCount(const size_t repeatCount) {
+    base_t::setRepeatCount(repeatCount);
   }
 
 };

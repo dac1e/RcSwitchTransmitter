@@ -178,9 +178,13 @@ public:
     pinMode(IOPIN, OUTPUT);
   }
 
-    inline bool send(const size_t protocolIndex, const uint32_t code, const size_t bitCount) {
-      return base_t::send(IOPIN, protocolIndex, code, bitCount);
-    }
+  inline bool send(const size_t protocolIndex, const uint32_t code, const size_t bitCount) {
+    return base_t::send(IOPIN, protocolIndex, code, bitCount);
+  }
+
+  inline bool setRepeatCount(const size_t repeatCount) {
+    return base_t::setRepeatCount(repeatCount);
+  }
 
 };
 

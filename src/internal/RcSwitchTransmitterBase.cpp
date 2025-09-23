@@ -38,7 +38,7 @@ inline void delayMicros(const uint32_t usec) {
 }
 
 void RcSwitchTransmitterBase::transmitBit(const int ioPin, const RcSwitchTx::TxTimingSpec &timingSpec,
-    RcSwitchTx::TxPulsePairTime &pulsePairTime) {
+    const RcSwitchTx::TxPulsePairTime &pulsePairTime) {
 
   const unsigned logicLevelA = (timingSpec.bInverseLevel) ? LOW : HIGH;
   const unsigned logicLevelB = (timingSpec.bInverseLevel) ? HIGH : LOW;

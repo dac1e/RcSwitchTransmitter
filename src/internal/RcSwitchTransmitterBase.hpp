@@ -33,32 +33,50 @@ template<typename T, typename ...R> struct TxProtocolTable;
 namespace RcSwitchTx {
 
 class RcSwitchTransmitterBase {
-  const RcSwitchTx::TxTimingSpecTable* mTxTimingSpecTable;
+  RcSwitchTx::TxTimingSpecTable mTxTimingSpecTable;
   size_t mRepeatCount;
 
   void transmitBit(const int ioPin,
       const RcSwitchTx::TxTimingSpec &timingSpec,
-      RcSwitchTx::TxPulsePairTime &pulsePairTime);
+      const RcSwitchTx::TxPulsePairTime &pulsePairTime);
 
 protected:
-  RcSwitchTransmitterBase() : mTxTimingSpecTable(nullptr), mRepeatCount(2) {}
+  RcSwitchTransmitterBase() : mTxTimingSpecTable{nullptr,0}, mRepeatCount(1) {}
 
   void begin( const RcSwitchTx::TxTimingSpecTable& txTimingSpecTable) {
-     mTxTimingSpecTable = &txTimingSpecTable;
-    }
+     mTxTimingSpecTable = txTimingSpecTable;
+  }
 
-    bool send(const int ioPin, const size_t protocolIndex, const uint32_t code, const size_t bitCount) {
-      if(mTxTimingSpecTable !=  nullptr) {
-        if(protocolIndex < mTxTimingSpecTable->size) {
-          const RcSwitchTx::TxTimingSpec& timingSpec = mTxTimingSpecTable->start[protocolIndex];
-          for(size_t i = 0; i < mRepeatCount; i++) {
+  inline bool setRepeatCount(const size_t repeatCount) {
+    mRepeatCount = repeatCount;
+  }
 
+  bool send(const int ioPin, const size_t protocolIndex, const uint32_t code, const size_t bitCount) {
+    if(mTxTimingSpecTable.start !=  nullptr) {
+      if(protocolIndex < mTxTimingSpecTable.size) {
+        const RcSwitchTx::TxTimingSpec& timingSpec = mTxTimingSpecTable.start[protocolIndex];
+
+        // Send synch at the beginning of the first repetition
+        transmitBit(ioPin, timingSpec, timingSpec.synchronizationPulsePair);
+
+        for(size_t repeat = 0; repeat < mRepeatCount; repeat++) {
+          for (int i = bitCount-1; i >= 0; i--) {
+            if (code & (1L << i)) {
+              transmitBit(ioPin, timingSpec, timingSpec.data1pulsePair);
+            }
+            else {
+              transmitBit(ioPin, timingSpec, timingSpec.data0pulsePair);
+            }
           }
-          return true;
+
+          // Send synch at the end if each repeat
+          transmitBit(ioPin, timingSpec, timingSpec.synchronizationPulsePair);
         }
+        return true;
       }
-      return false;
     }
+    return false;
+  }
 };
 
 } // namespace RcSwitchTx

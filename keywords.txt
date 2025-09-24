@@ -1,0 +1,21 @@
+#######################################
+# Syntax Coloring Map For RcSwitchTransmitter
+#######################################
+
+#######################################
+# Datatypes
+#######################################
+
+RcSwitchTransmitter	KEYWORD1
+TxProtocolTable	KEYWORD1
+makeTxTimingSpec	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+available	KEYWORD2
+begin	KEYWORD2
+dumpTimingSpec	KEYWORD2
+send	KEYWORD2
+setRepeatCount	KEYWORD2

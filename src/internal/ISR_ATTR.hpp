@@ -1,11 +1,11 @@
 /*
-  RcSwitchReceiver - Arduino libary for remote control receiver Copyright (c)
+  RcSwitchTransmitter - Arduino libary for remote control transmitter Copyright (c)
   2024 Wolfgang Schmieder.  All right reserved.
 
   Contributors:
   - Wolfgang Schmieder
 
-  Project home: https://github.com/dac1e/RcSwitchReceiver/
+  Project home: https://github.com/dac1e/RcSwitchTransmitter/
 
   This library is free software; you can redistribute it and/or modify it
   the terms of the GNU Lesser General Public License as under published

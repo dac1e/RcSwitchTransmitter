@@ -1,5 +1,5 @@
 /*
-  RcSwitchReceiver - Arduino libary for remote control transmitter Copyright (c)
+  RcSwitchTransmitter - Arduino libary for remote control transmitter Copyright (c)
   2024 Wolfgang Schmieder.  All right reserved.
 
   Contributors:

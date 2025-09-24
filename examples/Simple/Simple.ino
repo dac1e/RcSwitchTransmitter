@@ -24,7 +24,6 @@
 
 #include <Arduino.h>
 #include "RcSwitchTransmitter.hpp"
-
 // You can add own protocols and remove not needed protocols. Note that this changes the protocol
 // index, which is a parameter for the send() function.
 // However, the number of normal level protocols as well as the number of inverse level
@@ -56,8 +55,6 @@ constexpr int TX433_DATA_PIN = 13;
 constexpr int TX433_DATA_PIN = 7;
 #endif
 
-constexpr int TRIGGER_BUTTON = 12;
-
 // Reference to the serial to be used for printing.
 typeof(Serial)& output = Serial;
 
@@ -77,8 +74,6 @@ void setup()
   delay(500);
 #endif
   rcSwitchTransmitter.begin(txProtocolTable.toTimingSpecTable());
-
-  pinMode(TRIGGER_BUTTON, INPUT_PULLUP);
 }
 
 /* Some typical PT2262 buttons: */
@@ -92,16 +87,20 @@ constexpr uint32_t BUTTON_CODE_DEMO = 5393;
 
 void loop()
 {
+  /*
+   * If you have a 2nd Arduino, you can run the example sketch 'PrintReceivedData'
+   * from:
+   *    https://github.com/dac1e/RcSwitchReceiver/
+   * to watch what this demo sketch is sending.
+   */
+
   static constexpr size_t PROTCOL_INDEX_1 =  0; // PT2262
   static constexpr size_t PROTCOL_INDEX_2 = 11; // Sygonix
 
   // Send code on protocol 2262
-  while(digitalRead(TRIGGER_BUTTON) == LOW) {
-    rcSwitchTransmitter.send(PROTCOL_INDEX_1, BUTTON_CODE_DEMO, 24);
-  }
-
-
-//  // Send code on protocol Sygonix
-//  rcSwitchTransmitter.send(PROTCOL_INDEX_2, BUTTON_CODE_DEMO, 24);
-//  delay(1000);
+  rcSwitchTransmitter.send(PROTCOL_INDEX_1, BUTTON_CODE_DEMO, 24);
+  delay(1000);
+  // Send code on protocol Sygonix
+  rcSwitchTransmitter.send(PROTCOL_INDEX_2, BUTTON_CODE_DEMO, 24);
+  delay(1000);
 }

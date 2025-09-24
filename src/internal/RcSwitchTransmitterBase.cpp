@@ -1,5 +1,5 @@
 /*
-  RcSwitchReceiver - Arduino libary for remote control transmitter Copyright (c)
+  RcSwitchTransmitter - Arduino libary for remote control transmitter Copyright (c)
   2024 Wolfgang Schmieder.  All right reserved.
 
   Contributors:
@@ -80,7 +80,7 @@ void RcSwitchTransmitterBase::transmitBit(const int ioPin, const RcSwitchTx::TxT
   delayMicros(pulsePairTime.durationB - RCSWITCH_TRANSMITTER_TIMING_CORRECTION);
 }
 
-bool RcSwitchTransmitterBase::send(const int ioPin, const size_t protocolIndex,
+RESULT RcSwitchTransmitterBase::send(const int ioPin, const size_t protocolIndex,
     const uint32_t code, const size_t bitCount) {
   if (mTxTimingSpecTable.start != nullptr) {
     if (protocolIndex < mTxTimingSpecTable.size) {
@@ -96,13 +96,13 @@ bool RcSwitchTransmitterBase::send(const int ioPin, const size_t protocolIndex,
             transmitBit(ioPin, timingSpec, timingSpec.data0pulsePair);
           }
         }
-        // Send synch at the end if each repeat
+        // Send synch at the end of each repetition
         transmitBit(ioPin, timingSpec, timingSpec.synchronizationPulsePair);
       }
-      return true;
+      return OK;
     }
   }
-  return false;
+  return INIT_ERR;
 }
 
 } // namespace RcSwitchTx

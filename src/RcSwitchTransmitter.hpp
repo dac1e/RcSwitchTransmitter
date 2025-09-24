@@ -1,5 +1,5 @@
 /*
-  RcSwitchReceiver - Arduino libary for remote control transmitter Copyright (c)
+  RcSwitchTransmitter - Arduino libary for remote control transmitter Copyright (c)
   2025 Wolfgang Schmieder.  All right reserved.
 
   Contributors:
@@ -159,6 +159,11 @@ template<typename T, typename ...R> struct TxProtocolTable;
  *
  * RcSwitchTransmitter<5> rcSwitchTransmitter433;
  * RcSwitchTransmitter<6> rcSwitchTransmitter315;
+ *
+ * If you have a 2nd Arduino, you can run the example sketch 'PrintReceivedData'
+ * from:
+ *    https://github.com/dac1e/RcSwitchReceiver/
+ * to watch what a transmitter is doing.
  */
 
 using RcSwitchTx::TxTimingSpecTable;
@@ -166,6 +171,13 @@ using RcSwitchTx::TxTimingSpecTable;
 template<int IOPIN> class RcSwitchTransmitter : protected RcSwitchTx::RcSwitchTransmitterBase {
   typedef RcSwitchTx::RcSwitchTransmitterBase base_t;
 public:
+  static constexpr size_t DEFAULT_REPEAT_CNT = 3;
+
+  /**
+   * Default constructor
+   */
+  RcSwitchTransmitter() : base_t(DEFAULT_REPEAT_CNT) {}
+
   /**
    * Sets the protocol timing specification table to be used for transmitting data.
    * Sets up pin mode.
@@ -175,14 +187,16 @@ public:
     pinMode(IOPIN, OUTPUT);
   }
 
-  inline bool send(const size_t protocolIndex, const uint32_t code, const size_t bitCount) {
-    return base_t::send(IOPIN, protocolIndex, code, bitCount);
-  }
-
+  /**
+   * It is recommended to set the repeat count not lower than 3.
+   */
   inline void setRepeatCount(const size_t repeatCount) {
     base_t::setRepeatCount(repeatCount);
   }
 
+  inline RcSwitchTx::RESULT send(const size_t protocolIndex, const uint32_t code, const size_t bitCount) {
+    return base_t::send(IOPIN, protocolIndex, code, bitCount);
+  }
 };
 
 #endif /* RCSWITCH_TRANSMITTER_API_HPP_ */

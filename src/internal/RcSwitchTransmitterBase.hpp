@@ -1,5 +1,5 @@
 /*
-  RcSwitchReceiver - Arduino libary for remote control transmitter Copyright (c)
+  RcSwitchTransmitter - Arduino libary for remote control transmitter Copyright (c)
   2024 Wolfgang Schmieder.  All right reserved.
 
   Contributors:
@@ -32,7 +32,16 @@ template<typename T, typename ...R> struct TxProtocolTable;
 
 namespace RcSwitchTx {
 
+enum RESULT {
+    INIT_ERR = -1,   // begin() function was not called.
+    OK,              // send() function successfully executed.
+    BUSY             // still busy sending code from a previous send() call.
+};
+
+
 class RcSwitchTransmitterBase {
+private:
+
   RcSwitchTx::TxTimingSpecTable mTxTimingSpecTable;
   size_t mRepeatCount;
 
@@ -41,7 +50,8 @@ class RcSwitchTransmitterBase {
       const RcSwitchTx::TxPulsePairTime &pulsePairTime);
 
 protected:
-  RcSwitchTransmitterBase() : mTxTimingSpecTable{nullptr,0}, mRepeatCount(3) {}
+  RcSwitchTransmitterBase(const size_t repeatCnt) : mTxTimingSpecTable{nullptr,0}, mRepeatCount(repeatCnt) {
+  }
 
   void begin( const RcSwitchTx::TxTimingSpecTable& txTimingSpecTable) {
      mTxTimingSpecTable = txTimingSpecTable;
@@ -51,7 +61,7 @@ protected:
     mRepeatCount = repeatCount;
   }
 
-  bool send(const int ioPin, const size_t protocolIndex, const uint32_t code,
+  RESULT send(const int ioPin, const size_t protocolIndex, const uint32_t code,
       const size_t bitCount);
 };
 

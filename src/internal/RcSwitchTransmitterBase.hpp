@@ -61,7 +61,7 @@ protected:
     mRepeatCount = repeatCount;
   }
 
-  RESULT send(const int ioPin, const size_t protocolIndex, const uint32_t code,
+  RESULT send(const int ioPin, const size_t protocolIndex, const uint32_t* const dwords,
       const size_t bitCount);
 };
 

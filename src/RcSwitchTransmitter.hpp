@@ -195,7 +195,7 @@ public:
   }
 
   inline RcSwitchTx::RESULT send(const size_t protocolIndex, const uint32_t code, const size_t bitCount) {
-    return base_t::send(IOPIN, protocolIndex, code, bitCount);
+    return base_t::send(IOPIN, protocolIndex, &code, bitCount);
   }
 };
 

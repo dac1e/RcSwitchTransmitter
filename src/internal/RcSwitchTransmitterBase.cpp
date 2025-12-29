@@ -49,6 +49,30 @@
 
 namespace RcSwitchTx {
 
+void computeWhitening(uint8_t* inOut, const size_t bitCount) {
+  const size_t remainingBits = bitCount % (8 * sizeof(*inOut));
+  uint8_t WhiteningKeyMSB = 0x01;
+  uint8_t WhiteningKeyLSB = 0xFF;
+  uint8_t WhiteningKeyMSBPrevious = 0;
+
+  const size_t byteCount = (bitCount + 8 * sizeof(*inOut) - 1) / (8 * sizeof(*inOut));
+  for(size_t j = 0; j < byteCount; j++) {
+    inOut[j] ^= WhiteningKeyLSB;
+    const size_t bitCountOfCurrentByte = (j+1 < byteCount) || not remainingBits ? 8 * sizeof(*inOut) : remainingBits;
+    for( uint8_t i = 0; i < bitCountOfCurrentByte; i++ ) {
+      WhiteningKeyMSBPrevious = WhiteningKeyMSB;
+      WhiteningKeyMSB = (WhiteningKeyLSB & 0x01) ^ ((WhiteningKeyLSB >> 5) & 1);
+      WhiteningKeyLSB = ((WhiteningKeyLSB >> 1) & 0xFF) | ((WhiteningKeyMSBPrevious << 7) & 0x80);
+    }
+  }
+}
+
+void computeWhitening(uint8_t* out, const uint8_t* in, const size_t bitCount) {
+  const size_t byteCount = (bitCount + 8 * sizeof(*in) - 1) / (8 * sizeof(*in));
+  memcpy(out, in, byteCount);
+  computeWhitening(out, bitCount);
+}
+
 inline void delayMicros(uint32_t) __attribute__((always_inline, unused));
 
 #if RCSWITCH_TRANSMITTER_USE_LOCAL_DELAY_MICROS
@@ -81,21 +105,30 @@ void RcSwitchTransmitterBase::transmitBit(const int ioPin, const RcSwitchTx::TxT
 }
 
 RESULT RcSwitchTransmitterBase::send(const int ioPin, const size_t protocolIndex,
-    const uint32_t code, const size_t bitCount) {
+    const uint32_t* const dwords, const size_t bitCount) {
   if (mTxTimingSpecTable.start != nullptr) {
     if (protocolIndex < mTxTimingSpecTable.size) {
       const RcSwitchTx::TxTimingSpec &timingSpec =
           mTxTimingSpecTable.start[protocolIndex];
+
+      const size_t remainingBits = bitCount % (8 * sizeof(*dwords));
+
       // Send synch at the beginning of the first repetition
       transmitBit(ioPin, timingSpec, timingSpec.synchronizationPulsePair);
+
       for (size_t repeat = 0; repeat < mRepeatCount; repeat++) {
-        for (int i = bitCount - 1; i >= 0; i--) {
-          if (code & (1L << i)) {
-            transmitBit(ioPin, timingSpec, timingSpec.data1pulsePair);
-          } else {
-            transmitBit(ioPin, timingSpec, timingSpec.data0pulsePair);
+        const size_t dwordCount = (bitCount + 8 * sizeof(*dwords) - 1) / (8 * sizeof(*dwords));
+        for(size_t c = 0; c < dwordCount; c++) {
+          const size_t bitCountOfCurrentDword = (c+1 < dwordCount) || not remainingBits ? 8 * sizeof(*dwords) : remainingBits;
+          for (int b = bitCountOfCurrentDword - 1; b >= 0; b--) {
+            if (dwords[c] & (1L << b)) {
+              transmitBit(ioPin, timingSpec, timingSpec.data1pulsePair);
+            } else {
+              transmitBit(ioPin, timingSpec, timingSpec.data0pulsePair);
+            }
           }
         }
+
         // Send synch at the end of each repetition
         transmitBit(ioPin, timingSpec, timingSpec.synchronizationPulsePair);
       }

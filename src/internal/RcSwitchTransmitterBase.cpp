@@ -105,23 +105,25 @@ void RcSwitchTransmitterBase::transmitBit(const int ioPin, const RcSwitchTx::TxT
 }
 
 RESULT RcSwitchTransmitterBase::send(const int ioPin, const size_t protocolIndex,
-    const uint32_t* const dwords, const size_t bitCount) {
+    const uint32_t* const dwords, const size_t totalBitCount) {
   if (mTxTimingSpecTable.start != nullptr) {
     if (protocolIndex < mTxTimingSpecTable.size) {
-      const RcSwitchTx::TxTimingSpec &timingSpec =
-          mTxTimingSpecTable.start[protocolIndex];
-
-      const size_t remainingBits = bitCount % (8 * sizeof(*dwords));
+      const RcSwitchTx::TxTimingSpec &timingSpec = mTxTimingSpecTable.start[protocolIndex];
+      const size_t remainingBits = totalBitCount % (8 * sizeof(*dwords));
 
       // Send synch at the beginning of the first repetition
       transmitBit(ioPin, timingSpec, timingSpec.synchronizationPulsePair);
 
       for (size_t repeat = 0; repeat < mRepeatCount; repeat++) {
-        const size_t dwordCount = (bitCount + 8 * sizeof(*dwords) - 1) / (8 * sizeof(*dwords));
-        for(size_t c = 0; c < dwordCount; c++) {
-          const size_t bitCountOfCurrentDword = (c+1 < dwordCount) || not remainingBits ? 8 * sizeof(*dwords) : remainingBits;
-          for (int b = bitCountOfCurrentDword - 1; b >= 0; b--) {
-            if (dwords[c] & (1L << b)) {
+        const size_t dwordCount = (totalBitCount + 8 * sizeof(*dwords) - 1) / (8 * sizeof(*dwords));
+        for(size_t index = 0; index < dwordCount; index++) {
+
+//          const size_t bitCount = index || not remainingBits ? 8 * sizeof(*dwords) : remainingBits;
+
+          const size_t bitCount = ((index + 1) < dwordCount) || not remainingBits ? 8 * sizeof(*dwords) : remainingBits;
+          for (size_t bitPos = bitCount; bitPos > 0;) {
+            --bitPos;
+            if (dwords[index] & (1L << bitPos)) {
               transmitBit(ioPin, timingSpec, timingSpec.data1pulsePair);
             } else {
               transmitBit(ioPin, timingSpec, timingSpec.data0pulsePair);

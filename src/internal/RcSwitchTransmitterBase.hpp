@@ -62,7 +62,7 @@ protected:
   }
 
   RESULT send(const int ioPin, const size_t protocolIndex, const uint32_t* const dwords,
-      const size_t bitCount);
+      const size_t totalBitCount);
 };
 
 } // namespace RcSwitchTx

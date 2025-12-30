@@ -197,6 +197,23 @@ public:
   inline RcSwitchTx::RESULT send(const size_t protocolIndex, const uint32_t code, const size_t bitCount) {
     return base_t::send(IOPIN, protocolIndex, &code, bitCount);
   }
+
+  /**
+   * Send an array of double words (uint32_t). If parameter bitCount is not a multiple of 32, only the low
+   * significant bits of the last double word in the array are transmitted.
+   * If using RcSwitchReceiver for receiving the array, these low significant bits appear
+   * as low significant bits in the last received double word, and the remaining high significant
+   * bits are set to 0.
+   * E.g. if 3 double words should be transmitted, parameter dwords must point to the first double word of an
+   * array of 3 double words. Parameter bitCount must be set to 3*32 = 96.
+   * When bitCount is set to 94 in the above scenario, only the 30 lowest significant bits of the last
+   * double word are transmitted.
+   */
+  inline RcSwitchTx::RESULT send(const size_t protocolIndex, const uint32_t* const dwords,
+      const size_t bitCount) {
+    return base_t::send(IOPIN, protocolIndex, dwords, bitCount);
+  }
+
 };
 
 #endif /* RCSWITCH_TRANSMITTER_API_HPP_ */

@@ -31,14 +31,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "TxPulseDurationType.hpp"
 #include "TxTimingSpecTable.hpp"
 
 
 namespace RcSwitchTx {
 
 struct TxPulsePairTime {
-  unsigned int durationA;
-  unsigned int durationB;
+  duration_t durationA;
+  duration_t durationB;
 };
 
 struct TxTimingSpec {
@@ -49,8 +50,8 @@ struct TxTimingSpec {
 };
 
 struct TxPulsePairTiming {
-  unsigned int durationA;
-  unsigned int durationB;
+  duration_t durationA;
+  duration_t durationB;
 };
 
 namespace Debug {
@@ -64,7 +65,7 @@ namespace Debug {
  * makeTxTimingSpec
  */
 template<
-  unsigned int usecClock,
+  uint32_t usecClock,
   unsigned int synchA,  unsigned int synchB,
   unsigned int data0_A, unsigned int data0_B,
   unsigned int data1_A, unsigned int data1_B,
@@ -73,14 +74,14 @@ template<
 struct makeTxTimingSpec { // Calculate the timing specification from the protocol definition.
   static constexpr bool INVERSE_LEVEL = inverseLevel;
 
-  static constexpr unsigned int uSecSynchA = usecClock * synchA;
-  static constexpr unsigned int uSecSynchB = usecClock * synchB;
+  static constexpr RcSwitchTx::duration_t uSecSynchA = usecClock * synchA;
+  static constexpr RcSwitchTx::duration_t uSecSynchB = usecClock * synchB;
 
-  static constexpr unsigned int uSecData0_A = usecClock * data0_A;
-  static constexpr unsigned int uSecData0_B = usecClock * data0_B;
+  static constexpr RcSwitchTx::duration_t uSecData0_A = usecClock * data0_A;
+  static constexpr RcSwitchTx::duration_t uSecData0_B = usecClock * data0_B;
 
-  static constexpr unsigned int uSecData1_A = usecClock * data1_A;
-  static constexpr unsigned int uSecData1_B = usecClock * data1_B;
+  static constexpr RcSwitchTx::duration_t uSecData1_A = usecClock * data1_A;
+  static constexpr RcSwitchTx::duration_t uSecData1_B = usecClock * data1_B;
 
   typedef RcSwitchTx::TxTimingSpec tx_spec_t;
   static constexpr tx_spec_t TX = {INVERSE_LEVEL,
